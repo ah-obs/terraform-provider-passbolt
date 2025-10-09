@@ -232,6 +232,14 @@ func (r *PasswordResource) Read(ctx context.Context, req resource.ReadRequest, r
 	// Get the resource from Passbolt
 	resource, err := r.client.GetResource(ctx, state.ID.ValueString())
 	if err != nil {
+		// Check if the resource doesn't exist (was deleted outside of Terraform)
+		if isResourceNotFoundError(err) {
+			// Resource no longer exists, remove it from state
+			// This allows Terraform to recreate it if needed
+			resp.State.RemoveResource(ctx)
+			return
+		}
+
 		resp.Diagnostics.AddError(
 			"Error reading password",
 			"Could not read password, unexpected error: "+err.Error(),
@@ -267,6 +275,22 @@ func (r *PasswordResource) Read(ctx context.Context, req resource.ReadRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
+}
+
+// isResourceNotFoundError checks if the error indicates that the resource doesn't exist
+func isResourceNotFoundError(err error) bool {
+	// Check for common "not found" error patterns
+	errorStr := err.Error()
+	return contains(errorStr, "does not exist") ||
+		contains(errorStr, "not found") ||
+		contains(errorStr, "404") ||
+		contains(errorStr, "Resource does not exist")
+}
+
+// contains checks if a string contains a substring
+func contains(s, substr string) bool {
+	return len(s) >= len(substr) && s[:len(substr)] == substr ||
+		len(s) > len(substr) && contains(s[1:], substr)
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
