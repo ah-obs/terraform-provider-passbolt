@@ -277,22 +277,6 @@ func (r *PasswordResource) Read(ctx context.Context, req resource.ReadRequest, r
 	}
 }
 
-// isResourceNotFoundError checks if the error indicates that the resource doesn't exist
-func isResourceNotFoundError(err error) bool {
-	// Check for common "not found" error patterns
-	errorStr := err.Error()
-	return contains(errorStr, "does not exist") ||
-		contains(errorStr, "not found") ||
-		contains(errorStr, "404") ||
-		contains(errorStr, "Resource does not exist")
-}
-
-// contains checks if a string contains a substring
-func contains(s, substr string) bool {
-	return len(s) >= len(substr) && s[:len(substr)] == substr ||
-		len(s) > len(substr) && contains(s[1:], substr)
-}
-
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *PasswordResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var plan PasswordResourceModel

@@ -160,6 +160,14 @@ func (r *FolderResource) Read(ctx context.Context, req resource.ReadRequest, res
 	// Get the folder from Passbolt
 	folder, err := r.client.GetFolder(ctx, state.ID.ValueString(), nil)
 	if err != nil {
+		// Check if the folder doesn't exist (was deleted outside of Terraform)
+		if isResourceNotFoundError(err) {
+			// Folder no longer exists, remove it from state
+			// This allows Terraform to recreate it if needed
+			resp.State.RemoveResource(ctx)
+			return
+		}
+
 		resp.Diagnostics.AddError(
 			"Error reading folder",
 			"Could not read folder, unexpected error: "+err.Error(),
@@ -187,6 +195,22 @@ func (r *FolderResource) Read(ctx context.Context, req resource.ReadRequest, res
 	if resp.Diagnostics.HasError() {
 		return
 	}
+}
+
+// isResourceNotFoundError checks if the error indicates that the resource doesn't exist
+func isResourceNotFoundError(err error) bool {
+	// Check for common "not found" error patterns
+	errorStr := err.Error()
+	return contains(errorStr, "does not exist") ||
+		contains(errorStr, "not found") ||
+		contains(errorStr, "404") ||
+		contains(errorStr, "Resource does not exist")
+}
+
+// contains checks if a string contains a substring
+func contains(s, substr string) bool {
+	return len(s) >= len(substr) && s[:len(substr)] == substr ||
+		len(s) > len(substr) && contains(s[1:], substr)
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
