@@ -15,8 +15,8 @@ jobs:
         uses: actions/setup-go@v4
 
       - name: Install GoReleaser
-        run: |
-          curl -sSL https://goreleaser.com/static/linux_amd64/goreleaser | bash
+        shell: bash
+        run: curl -sSL https://goreleaser.com/static/linux_amd64/goreleaser | bash
 
       - name: Run GoReleaser
         env:
