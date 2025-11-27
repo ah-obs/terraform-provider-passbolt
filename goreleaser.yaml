@@ -1,50 +1,37 @@
 project_name: terraform-provider-passbolt
 
-version: 2
-
 builds:
-  - id: terraform_provider
-    main: ./cmd/terraform-provider-passbolt
+  - main: ./cmd/terraform-provider-passbolt
     binary: terraform-provider-passbolt
-    env:
-      - CGO_ENABLED=0
     goos:
       - linux
+      - darwin
+      - windows
     goarch:
       - amd64
       - arm64
+    env:
+      - CGO_ENABLED=0
 
 archives:
-  - id: provider_zip
-    builds:
-      - terraform_provider
-    format: zip
+  - format: zip
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     files:
       - LICENSE
       - README.md
 
-blobs:
-  - id: terraform_oci
-    provider: oci
-    destination_template: "reg.opaas.cloud/terraform-providers/passbolt:{{ .Version }}"
-    artifact_type: application/vnd.hashicorp.terraform-provider
-    paths:
-      - "dist/{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}.zip"
+dockers:
+  - image_templates:
+      - reg.opaas.cloud/terraform-providers/passbolt:{{ .Version }}
+    dockerfile: ./Dockerfile
+    build_flag_templates:
+      - "--platform linux/amd64,linux/arm64"
+    login:
+      username: $HARBOR_USERNAME
+      password: $HARBOR_PASSWORD
 
 release:
-  github: false
-  draft: false
+  disable: true  # Kein GitHub Release
 
 checksum:
   name_template: "checksums.txt"
-
-signs:
-  - artifacts: checksum
-    args:
-      - "--detach-sign"
-      - "--armor"
-      - "${artifact}"
-
-changelog:
-  skip: true
