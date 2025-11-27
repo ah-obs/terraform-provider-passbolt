@@ -3,7 +3,7 @@ project_name: terraform-provider-passbolt
 version: 2
 
 builds:
-  - main: ./cmd/terraform-provider-passbolt
+  - main: ./main.go
     binary: terraform-provider-passbolt
     goos:
       - linux
