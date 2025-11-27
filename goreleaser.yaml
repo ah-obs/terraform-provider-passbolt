@@ -28,9 +28,6 @@ dockers:
     dockerfile: ./Dockerfile
     build_flag_templates:
       - "--platform linux/amd64,linux/arm64"
-    login:
-      username: $HARBOR_USERNAME
-      password: $HARBOR_PASSWORD
 
 release:
   disable: true  # Kein GitHub Release
