@@ -20,7 +20,7 @@ jobs:
         uses: goreleaser/goreleaser-action@v2
         with:
           version: 2.12.7
-          args: release --rm-dist
+          args: release
         env:
           DOCKER_USERNAME: ${{ secrets.HARBOR_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
