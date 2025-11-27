@@ -1,37 +1,45 @@
-name: Release Terraform Provider
+name: Publish Terraform Provider to Harbor
 
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - "v*"
 
 jobs:
-  release:
+  publish:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Setup Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: '1.21'
+      - name: Install ORAS
+        run: |
+          curl -sSL https://github.com/oras-project/oras/releases/download/v1.2.0/oras_1.2.0_linux_amd64.tar.gz \
+            | tar -xz -C /usr/local/bin oras
 
-      - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v2
-        with:
-          version: 2.12.7
-          args: release
-        env:
-          DOCKER_USERNAME: ${{ secrets.HARBOR_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
+      - name: Extract version from tag
+        id: vars
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
-      - name: Upload ZIPs to Harbor
+      - name: Build provider (example)
+        run: |
+          # Your build process
+          mkdir -p build/linux_amd64
+          go build -o build/linux_amd64/terraform-provider-passbolt .
+
+      - name: Login to Harbor
         env:
           HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
           HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
         run: |
-          for f in dist/*.zip; do
-            curl -u "${HARBOR_USERNAME}:${HARBOR_PASSWORD}" \
-                 -X POST "http://reg.opaas.cloud/v2/terraform-providers/passbolt/blobs/uploads/" \
-                 -F "file=@${f}"
-          done
+          echo "${HARBOR_PASSWORD}" | oras login reg.opaas.cloud \
+            --username "${HARBOR_USERNAME}" --password-stdin
+
+      - name: Push Terraform provider as OCI artifact
+        run: |
+          oras push \
+            reg.opaas.cloud/terraform-providers/passbolt:${{ steps.vars.outputs.version }} \
+            ./build/linux_amd64/terraform-provider-passbolt:application/vnd.hashicorp.terraform.provider.binary \
+            --annotation org.opencontainers.image.title="terraform-provider-passbolt" \
+            --annotation org.opencontainers.image.version="${{ steps.vars.outputs.version }}"
