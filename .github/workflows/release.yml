@@ -32,6 +32,6 @@ jobs:
         run: |
           for f in dist/*.zip; do
             curl -u "${HARBOR_USERNAME}:${HARBOR_PASSWORD}" \
-                 -X POST "https://reg.opaas.cloud/v2/terraform-providers/passbolt/blobs/uploads/" \
+                 -X POST "http://reg.opaas.cloud/v2/terraform-providers/passbolt/blobs/uploads/" \
                  -F "file=@${f}"
           done
