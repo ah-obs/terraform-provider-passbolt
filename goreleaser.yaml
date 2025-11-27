@@ -19,13 +19,6 @@ archives:
   - format: zip
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 
-dockers:
-  - image_templates:
-      - reg.opaas.cloud/terraform-providers/passbolt:{{ .Version }}
-    dockerfile: ./Dockerfile
-    build_flag_templates:
-      - "--platform linux/amd64,linux/arm64"
-
 release:
   disable: true  # Kein GitHub Release
 
