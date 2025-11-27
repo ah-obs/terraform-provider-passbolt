@@ -26,11 +26,12 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
 
       - name: Upload ZIPs to Harbor
+        env:
+          HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
+          HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
         run: |
-          USER="${{ secrets.HARBOR_USERNAME }}"
-          PASS="${{ secrets.HARBOR_PASSWORD }}"
           for f in dist/*.zip; do
-            curl -u "${USER}:${PASS}" \
+            curl -u "${HARBOR_USERNAME}:${HARBOR_PASSWORD}" \
                  -X POST "https://reg.opaas.cloud/v2/terraform-providers/passbolt/blobs/uploads/" \
                  -F "file=@${f}"
           done
