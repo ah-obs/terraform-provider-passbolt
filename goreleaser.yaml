@@ -1,5 +1,7 @@
 project_name: terraform-provider-passbolt
 
+version: 2
+
 builds:
   - main: ./cmd/terraform-provider-passbolt
     binary: terraform-provider-passbolt
