@@ -13,13 +13,14 @@ jobs:
 
       - name: Setup Go
         uses: actions/setup-go@v4
-
-      - name: Install GoReleaser
-        shell: bash
-        run: curl -sSL https://goreleaser.com/static/linux_amd64/goreleaser | bash
+        with:
+          go-version: '1.21'
 
       - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v2
+        with:
+          version: latest
+          args: release --rm-dist
         env:
           HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
           HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
-        run: goreleaser release --rm-dist
